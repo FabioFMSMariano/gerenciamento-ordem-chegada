@@ -310,6 +310,7 @@ const App: React.FC = () => {
         onOpenModal={openModal}
         lastExit={exitLogs[0]}
         onLogout={handleLogout}
+        isAdmin={tenantId === 'ADMIN'}
       />
 
       <main className="flex-1 flex flex-col p-4 lg:p-8 gap-6 overflow-y-auto relative z-10">
