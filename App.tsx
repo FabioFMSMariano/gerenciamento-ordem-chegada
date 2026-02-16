@@ -47,7 +47,7 @@ const App: React.FC = () => {
           arrivalTime: q.arrival_time,
           period: q.period as Period
         }));
-      
+
       setMorningQueue(formattedQueue.filter(q => q.period === Period.MORNING));
       setAfternoonQueue(formattedQueue.filter(q => q.period === Period.AFTERNOON));
     }
@@ -101,13 +101,28 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // 1. Verifica sessão do Supabase (GitHub e métodos tradicionais)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+      if (session) setSession(session);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+      if (session) setSession(session);
     });
+
+    // 2. Verifica sessão de PIN (Offline/Guest)
+    const guestData = localStorage.getItem('terminal_guest_session');
+    if (guestData) {
+      try {
+        const guest = JSON.parse(guestData);
+        if (guest.authenticated) {
+          // Criamos um objeto parcial de sessão para compatibilidade
+          setSession({ user: { email: `${guest.label}@pin.access` } } as any);
+        }
+      } catch (e) {
+        localStorage.removeItem('terminal_guest_session');
+      }
+    }
 
     return () => subscription.unsubscribe();
   }, []);
@@ -238,7 +253,7 @@ const App: React.FC = () => {
 
   const reorderQueue = useCallback(async (newList: QueueEntry[], period: Period) => {
     const baseTime = Date.now();
-    const updates = newList.map((item, index) => 
+    const updates = newList.map((item, index) =>
       supabase.from('queues').update({ arrival_time: baseTime + index }).eq('id', item.queueId)
     );
     await Promise.all(updates);
@@ -247,11 +262,14 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem('terminal_guest_session');
     setSession(null);
   };
 
   if (!session) {
-    return <AuthScreen isDarkMode={isDarkMode} onSuccess={() => {}} />;
+    return <AuthScreen isDarkMode={isDarkMode} onSuccess={(label) => {
+      setSession({ user: { email: `${label || 'Operador'}@pin.access` } } as any);
+    }} />;
   }
 
   return (
@@ -260,12 +278,12 @@ const App: React.FC = () => {
       <div className="grid-pattern" />
       <div className="radar-scan no-print" />
 
-      <Sidebar 
+      <Sidebar
         isOpen={isSidebarOpen}
         isDarkMode={isDarkMode}
         toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onClose={() => setIsSidebarOpen(false)}
-        onOpenModal={openModal} 
+        onOpenModal={openModal}
         lastExit={exitLogs[0]}
         onLogout={handleLogout}
       />
@@ -297,30 +315,30 @@ const App: React.FC = () => {
         </header>
 
         <div className={`flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[1fr_320px_1fr] gap-8 items-start max-w-[1700px] mx-auto w-full transition-opacity duration-500 ${loading ? 'opacity-30' : 'opacity-100'}`}>
-          <QueueColumn period={Period.MORNING} queue={morningQueue} isDarkMode={isDarkMode} onAddClick={() => { setSelectedPeriod(Period.MORNING); startTransition(() => setModalType('include')); }} onExitClick={(d) => { setSelectedPeriod(Period.MORNING); setEditingDriver(d); startTransition(() => setModalType('exit')); }} onRemove={removeFromQueue} onReorder={(l) => reorderQueue(l, Period.MORNING)} onClear={()=>{}} onUpdate={()=>{}} />
+          <QueueColumn period={Period.MORNING} queue={morningQueue} isDarkMode={isDarkMode} onAddClick={() => { setSelectedPeriod(Period.MORNING); startTransition(() => setModalType('include')); }} onExitClick={(d) => { setSelectedPeriod(Period.MORNING); setEditingDriver(d); startTransition(() => setModalType('exit')); }} onRemove={removeFromQueue} onReorder={(l) => reorderQueue(l, Period.MORNING)} onClear={() => { }} onUpdate={() => { }} />
           <RecentExits logs={exitLogs} isDarkMode={isDarkMode} />
-          <QueueColumn period={Period.AFTERNOON} queue={afternoonQueue} isDarkMode={isDarkMode} onAddClick={() => { setSelectedPeriod(Period.AFTERNOON); startTransition(() => setModalType('include')); }} onExitClick={(d) => { setSelectedPeriod(Period.AFTERNOON); setEditingDriver(d); startTransition(() => setModalType('exit')); }} onRemove={removeFromQueue} onReorder={(l) => reorderQueue(l, Period.AFTERNOON)} onClear={()=>{}} onUpdate={()=>{}} />
+          <QueueColumn period={Period.AFTERNOON} queue={afternoonQueue} isDarkMode={isDarkMode} onAddClick={() => { setSelectedPeriod(Period.AFTERNOON); startTransition(() => setModalType('include')); }} onExitClick={(d) => { setSelectedPeriod(Period.AFTERNOON); setEditingDriver(d); startTransition(() => setModalType('exit')); }} onRemove={removeFromQueue} onReorder={(l) => reorderQueue(l, Period.AFTERNOON)} onClear={() => { }} onUpdate={() => { }} />
         </div>
       </main>
 
-      <ModalManager 
-        type={modalType} 
-        period={selectedPeriod} 
-        drivers={drivers} 
-        exitLogs={exitLogs} 
-        isDarkMode={isDarkMode} 
-        editingDriver={editingDriver} 
-        morningQueue={morningQueue} 
-        afternoonQueue={afternoonQueue} 
+      <ModalManager
+        type={modalType}
+        period={selectedPeriod}
+        drivers={drivers}
+        exitLogs={exitLogs}
+        isDarkMode={isDarkMode}
+        editingDriver={editingDriver}
+        morningQueue={morningQueue}
+        afternoonQueue={afternoonQueue}
         securityChallenge={securityChallenge}
-        onClose={() => { setModalType(null); setEditingDriver(null); }} 
-        onRegisterDriver={registerNewDriver} 
-        onUpdateDriver={updateDriverInDatabase} 
-        onDeleteDriverFromDB={removeDriverFromDatabase} 
-        onAddToQueue={addDriverToQueue} 
-        onConfirmExit={handleExit} 
-        onReorder={reorderQueue} 
-        onRemoveByPosition={handleRemoveByPosition} 
+        onClose={() => { setModalType(null); setEditingDriver(null); }}
+        onRegisterDriver={registerNewDriver}
+        onUpdateDriver={updateDriverInDatabase}
+        onDeleteDriverFromDB={removeDriverFromDatabase}
+        onAddToQueue={addDriverToQueue}
+        onConfirmExit={handleExit}
+        onReorder={reorderQueue}
+        onRemoveByPosition={handleRemoveByPosition}
         onClearAllOperationalData={clearAllOperationalData}
         onConfirmSecurityPurge={executeDataPurge}
       />
