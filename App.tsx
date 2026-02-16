@@ -23,6 +23,7 @@ const App: React.FC = () => {
   const [editingDriver, setEditingDriver] = useState<QueueEntry | null>(null);
   const [securityChallenge, setSecurityChallenge] = useState<{ code: string; expiresAt: number } | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [tenantLabel, setTenantLabel] = useState<string | null>(null);
 
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('dark_mode');
@@ -111,6 +112,7 @@ const App: React.FC = () => {
       if (session) {
         setSession(session);
         setTenantId('ADMIN'); // Admin vê tudo ou um ID específico se desejado
+        setTenantLabel('Administrador');
       }
     });
 
@@ -118,6 +120,7 @@ const App: React.FC = () => {
       if (session) {
         setSession(session);
         setTenantId('ADMIN');
+        setTenantLabel('Administrador');
       }
     });
 
@@ -129,6 +132,7 @@ const App: React.FC = () => {
         if (guest.authenticated) {
           setSession({ user: { email: `${guest.label}@pin.access` } } as any);
           setTenantId(guest.tenantId);
+          setTenantLabel(guest.label);
         }
       } catch (e) {
         localStorage.removeItem('terminal_guest_session');
@@ -281,11 +285,13 @@ const App: React.FC = () => {
     localStorage.removeItem('terminal_guest_session');
     setSession(null);
     setTenantId(null);
+    setTenantLabel(null);
   };
 
   if (!session) {
     return <AuthScreen isDarkMode={isDarkMode} onSuccess={(id, label) => {
       setTenantId(id);
+      setTenantLabel(label || 'Operador');
       setSession({ user: { email: `${label || 'Operador'}@pin.access` } } as any);
     }} />;
   }
@@ -316,8 +322,15 @@ const App: React.FC = () => {
             </button>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-cyan-600 rounded-2xl rotate-12 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-cyan-900/40 shrink-0">OC</div>
-              <div>
-                <h1 className="text-3xl lg:text-4xl font-black uppercase tracking-tighter mono">ORDEM DE <span className="text-cyan-500">CHEGADA</span></h1>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-3xl lg:text-4xl font-black uppercase tracking-tighter mono leading-none">ORDEM DE <span className="text-cyan-500">CHEGADA</span></h1>
+                  {tenantLabel && (
+                    <span className="hidden md:inline-block px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[10px] font-black tracking-widest text-cyan-500 uppercase">
+                      {tenantLabel}
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 mt-1">
                   <div className={`w-2 h-2 rounded-full ${loading ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'}`} />
                   <span className="text-[10px] font-black uppercase tracking-widest opacity-60 mono">{loading ? 'SINCRONIZANDO...' : 'OPERACIONAL'}</span>
