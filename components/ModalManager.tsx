@@ -86,6 +86,7 @@ const ModalManager: React.FC<ModalManagerProps> = (props) => {
               {props.type === 'register-operator' && 'Cadastrar Usuário'}
               {props.type === 'driver-productivity' && 'Métricas de Produtividade'}
               {props.type === 'queue-frequency' && 'Frequência de Fila (Hoje)'}
+              {props.type === 'register-tenant' && 'Novo Inquilino / Workspace'}
               {props.type === 'security-challenge' && '🔒 Acesso Restrito'}
             </h2>
           </div>
@@ -109,6 +110,7 @@ const ModalManager: React.FC<ModalManagerProps> = (props) => {
             {props.type === 'register-operator' && <RegisterOperatorForm isDarkMode={props.isDarkMode} />}
             {props.type === 'driver-productivity' && <DriverProductivityView isDarkMode={props.isDarkMode} drivers={props.drivers} />}
             {props.type === 'queue-frequency' && <QueueFrequencyView isDarkMode={props.isDarkMode} morningQueue={props.morningQueue} afternoonQueue={props.afternoonQueue} logs={props.exitLogs} />}
+            {props.type === 'register-tenant' && <RegisterTenantForm isDarkMode={props.isDarkMode} onSave={() => props.onClose()} />}
             {props.type === 'security-challenge' && props.securityChallenge && (
               <SecurityChallengeView
                 isDarkMode={props.isDarkMode}
@@ -802,6 +804,47 @@ const QueueFrequencyView: React.FC<{ isDarkMode: boolean; morningQueue: QueueEnt
 
 /* --- MISSING COMPONENT --- */
 /* --- MISSING COMPONENT --- */
+const RegisterTenantForm: React.FC<{ isDarkMode: boolean; onSave: () => void }> = ({ isDarkMode, onSave }) => {
+  const [name, setName] = useState('');
+  const [pin, setPin] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const tenantId = crypto.randomUUID();
+    const { error } = await supabase.from('operator_access').insert([{
+      pin,
+      label: name,
+      tenant_id: tenantId
+    }]);
+
+    if (!error) {
+      alert(`Inquilino "${name}" criado com sucesso! Use o PIN ${pin} para acessar.`);
+      onSave();
+    } else {
+      alert('Erro ao criar inquilino: ' + error.message);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+      <div className="flex flex-col gap-2">
+        <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4">NOME DO LUGAR / UNIDADE</label>
+        <input placeholder="EX: UNIDADE SUL" required className={`p-5 rounded-2xl border font-black uppercase ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={name} onChange={e => setName(e.target.value.toUpperCase())} />
+      </div>
+      <div className="flex flex-col gap-2">
+        <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4">CÓDIGO DE ACESSO (PIN)</label>
+        <input placeholder="EX: 1234" required type="password" inputMode="numeric" className={`p-5 rounded-2xl border font-black mono text-center text-3xl ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={pin} onChange={e => setPin(e.target.value)} />
+      </div>
+      <button disabled={loading} className="bg-cyan-600 text-white p-6 rounded-[24px] font-black uppercase tracking-widest mt-4 shadow-xl transition-all hover:bg-cyan-500 active:scale-95 disabled:opacity-50">
+        {loading ? 'CRIANDO...' : 'CRIAR NOVO WORKSPACE'}
+      </button>
+    </form>
+  );
+};
+
 const RegisterOperatorForm: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');

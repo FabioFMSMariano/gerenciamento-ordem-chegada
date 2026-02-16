@@ -10,12 +10,14 @@ export interface Driver {
   fleetNumber: string;
   registration: string;
   company: string;
+  tenantId?: string;
 }
 
 export interface QueueEntry extends Driver {
   queueId: string;
   arrivalTime: number;
   period: Period;
+  tenantId?: string;
 }
 
 export interface ExitLog {
@@ -31,6 +33,7 @@ export interface ExitLog {
   exitTime: number;
   period: Period;
   date: string; // YYYY-MM-DD
+  tenantId?: string;
 }
 
 export interface DailyReport {

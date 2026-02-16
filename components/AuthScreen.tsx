@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 
 interface AuthScreenProps {
   isDarkMode: boolean;
-  onSuccess: (label?: string) => void;
+  onSuccess: (tenantId: string, label?: string) => void;
 }
 
 const AuthScreen: React.FC<AuthScreenProps> = ({ isDarkMode, onSuccess }) => {
@@ -15,7 +15,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ isDarkMode, onSuccess }) => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pin) return;
-    
+
     setLoading(true);
     setError(null);
 
@@ -31,12 +31,14 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ isDarkMode, onSuccess }) => {
         setError('Acesso negado. Código incorreto.');
       } else {
         // Se o PIN estiver correto, salvamos no localStorage para persistência
+        const tenantId = data.tenant_id || data.id; // Fallback para ID se tenant_id for nulo
         localStorage.setItem('terminal_guest_session', JSON.stringify({
           authenticated: true,
           label: data.label || 'Operador',
+          tenantId: tenantId,
           loginTime: Date.now()
         }));
-        onSuccess(data.label);
+        onSuccess(tenantId, data.label);
       }
     } catch (err) {
       setError('Erro de conexão com o terminal.');

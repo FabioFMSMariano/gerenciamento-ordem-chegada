@@ -22,6 +22,7 @@ const App: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<Period>(Period.MORNING);
   const [editingDriver, setEditingDriver] = useState<QueueEntry | null>(null);
   const [securityChallenge, setSecurityChallenge] = useState<{ code: string; expiresAt: number } | null>(null);
+  const [tenantId, setTenantId] = useState<string | null>(null);
 
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('dark_mode');
@@ -37,7 +38,8 @@ const App: React.FC = () => {
   });
 
   const fetchQueues = async () => {
-    const { data } = await supabase.from('queues').select(`*, drivers(*)`).order('arrival_time', { ascending: true });
+    if (!tenantId) return;
+    const { data } = await supabase.from('queues').select(`*, drivers(*)`).eq('tenant_id', tenantId).order('arrival_time', { ascending: true });
     if (data) {
       const formattedQueue: QueueEntry[] = data
         .filter((q: any) => q.drivers)
@@ -54,14 +56,17 @@ const App: React.FC = () => {
   };
 
   const fetchDriversList = async () => {
-    const { data } = await supabase.from('drivers').select('*').order('name');
+    if (!tenantId) return;
+    const { data } = await supabase.from('drivers').select('*').eq('tenant_id', tenantId).order('name');
     if (data) setDrivers(data.map(mapDriver));
   };
 
   const fetchRecentLogs = async () => {
+    if (!tenantId) return;
     const { data } = await supabase
       .from('exit_logs')
       .select('*')
+      .eq('tenant_id', tenantId)
       .order('exit_time', { ascending: false })
       .limit(10);
 
@@ -103,11 +108,17 @@ const App: React.FC = () => {
   useEffect(() => {
     // 1. Verifica sessão do Supabase (GitHub e métodos tradicionais)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setSession(session);
+      if (session) {
+        setSession(session);
+        setTenantId('ADMIN'); // Admin vê tudo ou um ID específico se desejado
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) setSession(session);
+      if (session) {
+        setSession(session);
+        setTenantId('ADMIN');
+      }
     });
 
     // 2. Verifica sessão de PIN (Offline/Guest)
@@ -116,8 +127,8 @@ const App: React.FC = () => {
       try {
         const guest = JSON.parse(guestData);
         if (guest.authenticated) {
-          // Criamos um objeto parcial de sessão para compatibilidade
           setSession({ user: { email: `${guest.label}@pin.access` } } as any);
+          setTenantId(guest.tenantId);
         }
       } catch (e) {
         localStorage.removeItem('terminal_guest_session');
@@ -131,10 +142,12 @@ const App: React.FC = () => {
     if (!session) return;
 
     fetchData();
+    const channelFilters = tenantId === 'ADMIN' ? {} : { filter: `tenant_id=eq.${tenantId}` };
+
     const channel = supabase.channel('realtime-logistics')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'queues' }, () => fetchQueues())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'drivers' }, () => fetchDriversList())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'exit_logs' }, () => fetchRecentLogs())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'queues', ...channelFilters }, () => fetchQueues())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'drivers', ...channelFilters }, () => fetchDriversList())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'exit_logs', ...channelFilters }, () => fetchRecentLogs())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
@@ -155,7 +168,8 @@ const App: React.FC = () => {
     await supabase.from('queues').insert([{
       driver_id: driver.id,
       period: period,
-      arrival_time: Date.now()
+      arrival_time: Date.now(),
+      tenant_id: tenantId
     }]);
     setModalType(null);
   }, []);
@@ -165,7 +179,8 @@ const App: React.FC = () => {
       name: driver.name,
       fleet_number: driver.fleetNumber,
       registration: driver.registration,
-      company: driver.company
+      company: driver.company,
+      tenant_id: tenantId
     }]);
     setModalType(null);
   }, []);
@@ -239,6 +254,7 @@ const App: React.FC = () => {
       period: log.period,
       exit_time: Date.now(),
       date: new Date().toISOString().split('T')[0],
+      tenant_id: tenantId
     };
 
     const { error } = await supabase.from('exit_logs').insert([newLog]);
@@ -264,10 +280,12 @@ const App: React.FC = () => {
     await supabase.auth.signOut();
     localStorage.removeItem('terminal_guest_session');
     setSession(null);
+    setTenantId(null);
   };
 
   if (!session) {
-    return <AuthScreen isDarkMode={isDarkMode} onSuccess={(label) => {
+    return <AuthScreen isDarkMode={isDarkMode} onSuccess={(id, label) => {
+      setTenantId(id);
       setSession({ user: { email: `${label || 'Operador'}@pin.access` } } as any);
     }} />;
   }

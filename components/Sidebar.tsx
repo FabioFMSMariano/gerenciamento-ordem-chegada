@@ -43,6 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, isDarkMode, toggleDarkMode, o
           <p className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.3em] ml-2 mb-2">Entregadores</p>
           <SidebarButton onClick={() => onOpenModal('register')} label="Novo Cadastro" icon="plus-circle" color="cyan" />
           <SidebarButton onClick={() => onOpenModal('delete-driver')} label="Gestão de Banco" icon="database" color="slate" />
+          <SidebarButton onClick={() => onOpenModal('register-tenant')} label="Novo Inquilino" icon="users" color="purple" />
 
           <p className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.3em] ml-2 mt-6 mb-2">Monitoramento</p>
           <SidebarButton onClick={() => onOpenModal('remove-pos')} label="Excluir da Fila" icon="trash" color="red" />
@@ -109,6 +110,7 @@ const SidebarButton: React.FC<{ onClick: () => void; label: string; icon: string
       case 'file-text': return '📑';
       case 'chart-bar': return '📊';
       case 'check-square': return '✓';
+      case 'users': return '👥';
       default: return '●';
     }
   };
