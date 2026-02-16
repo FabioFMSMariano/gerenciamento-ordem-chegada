@@ -38,9 +38,13 @@ const App: React.FC = () => {
     company: d.company || ''
   });
 
-  const fetchQueues = async () => {
+  const fetchQueues = useCallback(async () => {
     if (!tenantId) return;
-    const { data } = await supabase.from('queues').select(`*, drivers(*)`).eq('tenant_id', tenantId).order('arrival_time', { ascending: true });
+    let query = supabase.from('queues').select(`*, drivers(*)`);
+    if (tenantId !== 'ADMIN') {
+      query = query.eq('tenant_id', tenantId);
+    }
+    const { data } = await query.order('arrival_time', { ascending: true });
     if (data) {
       const formattedQueue: QueueEntry[] = data
         .filter((q: any) => q.drivers)
@@ -54,20 +58,25 @@ const App: React.FC = () => {
       setMorningQueue(formattedQueue.filter(q => q.period === Period.MORNING));
       setAfternoonQueue(formattedQueue.filter(q => q.period === Period.AFTERNOON));
     }
-  };
+  }, [tenantId]);
 
-  const fetchDriversList = async () => {
+  const fetchDriversList = useCallback(async () => {
     if (!tenantId) return;
-    const { data } = await supabase.from('drivers').select('*').eq('tenant_id', tenantId).order('name');
+    let query = supabase.from('drivers').select('*');
+    if (tenantId !== 'ADMIN') {
+      query = query.eq('tenant_id', tenantId);
+    }
+    const { data } = await query.order('name');
     if (data) setDrivers(data.map(mapDriver));
-  };
+  }, [tenantId]);
 
-  const fetchRecentLogs = async () => {
+  const fetchRecentLogs = useCallback(async () => {
     if (!tenantId) return;
-    const { data } = await supabase
-      .from('exit_logs')
-      .select('*')
-      .eq('tenant_id', tenantId)
+    let query = supabase.from('exit_logs').select('*');
+    if (tenantId !== 'ADMIN') {
+      query = query.eq('tenant_id', tenantId);
+    }
+    const { data } = await query
       .order('exit_time', { ascending: false })
       .limit(10);
 
@@ -88,9 +97,10 @@ const App: React.FC = () => {
       }));
       setExitLogs(formattedLogs);
     }
-  };
+  }, [tenantId]);
 
   const fetchData = useCallback(async () => {
+    if (!tenantId) return;
     try {
       setLoading(true);
       await fetchQueues();
@@ -104,7 +114,7 @@ const App: React.FC = () => {
       console.error('Erro na sincronização:', error);
       setLoading(false);
     }
-  }, []);
+  }, [tenantId, fetchQueues, fetchDriversList, fetchRecentLogs]);
 
   useEffect(() => {
     // 1. Verifica sessão do Supabase (GitHub e métodos tradicionais)
@@ -143,7 +153,7 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!session) return;
+    if (!session || !tenantId) return;
 
     fetchData();
     const channelFilters = tenantId === 'ADMIN' ? {} : { filter: `tenant_id=eq.${tenantId}` };
@@ -155,7 +165,7 @@ const App: React.FC = () => {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [fetchData, session]);
+  }, [fetchData, session, tenantId, fetchQueues, fetchDriversList, fetchRecentLogs]);
 
   useEffect(() => {
     localStorage.setItem('dark_mode', isDarkMode.toString());
@@ -237,8 +247,9 @@ const App: React.FC = () => {
   }, [fetchData, tenantId]);
 
   const removeFromQueue = useCallback(async (targetQueueId: string) => {
-    await supabase.from('queues').delete().eq('id', targetQueueId);
-  }, []);
+    const { error } = await supabase.from('queues').delete().eq('id', targetQueueId).eq('tenant_id', tenantId);
+    if (error) console.error('Erro ao remover da fila:', error);
+  }, [tenantId]);
 
   const handleRemoveByPosition = useCallback(async (pos: number, period: Period) => {
     const targetList = period === Period.MORNING ? morningQueue : afternoonQueue;
@@ -270,6 +281,9 @@ const App: React.FC = () => {
       if (queueItem) await removeFromQueue(queueItem.queueId);
       setModalType(null);
       setEditingDriver(null);
+    } else {
+      console.error('Erro ao registrar saída:', error);
+      alert('Erro ao registrar saída no banco de dados. Verifique a conexão.');
     }
   }, [morningQueue, afternoonQueue, removeFromQueue, tenantId]);
 
