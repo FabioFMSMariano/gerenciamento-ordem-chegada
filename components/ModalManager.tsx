@@ -100,7 +100,7 @@ const ModalManager: React.FC<ModalManagerProps> = (props) => {
         <div className={`overflow-y-auto flex-1 custom-scrollbar p-8`}>
           <Suspense fallback={<div className="flex items-center justify-center h-40 font-black animate-pulse text-cyan-500">CARREGANDO...</div>}>
             {props.type === 'register' && <RegisterDriverForm isDarkMode={props.isDarkMode} onSave={props.onRegisterDriver} />}
-            {props.type === 'delete-driver' && <DeleteDriverView isDarkMode={props.isDarkMode} drivers={props.drivers} onUpdate={props.onUpdateDriver} />}
+            {props.type === 'delete-driver' && <DeleteDriverView isDarkMode={props.isDarkMode} drivers={props.drivers} onUpdate={props.onUpdateDriver} onDelete={props.onDeleteDriverFromDB} />}
             {props.type === 'include' && <IncludeInQueue isDarkMode={props.isDarkMode} drivers={props.drivers} onSelect={(d) => props.onAddToQueue(d, props.period)} />}
             {props.type === 'exit' && props.editingDriver && <ExitForm isDarkMode={props.isDarkMode} driver={props.editingDriver} period={props.period} onConfirm={props.onConfirmExit} />}
             {props.type === 'daily-report' && <ReportView logs={props.exitLogs.filter(l => l.date === new Date().toISOString().split('T')[0])} />}
@@ -551,7 +551,7 @@ const RegisterDriverForm: React.FC<{ isDarkMode: boolean; onSave: (d: Driver) =>
   );
 };
 
-const DeleteDriverView: React.FC<{ isDarkMode: boolean; drivers: Driver[]; onUpdate?: (d: Driver) => void }> = ({ isDarkMode, drivers, onUpdate }) => {
+const DeleteDriverView: React.FC<{ isDarkMode: boolean; drivers: Driver[]; onUpdate?: (d: Driver) => void; onDelete?: (id: string) => void }> = ({ isDarkMode, drivers, onUpdate, onDelete }) => {
   const [search, setSearch] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Driver | null>(null);
@@ -604,6 +604,12 @@ const DeleteDriverView: React.FC<{ isDarkMode: boolean; drivers: Driver[]; onUpd
                 </div>
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                   <button onClick={() => handleStartEdit(d)} className="bg-cyan-500/10 text-cyan-600 px-6 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest hover:bg-cyan-500 hover:text-white transition-all shadow-sm">Editar Cadastro</button>
+                  <button
+                    onClick={() => onDelete && onDelete(d.id)}
+                    className="bg-red-500/10 text-red-600 px-6 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                  >
+                    Excluir
+                  </button>
                 </div>
               </div>
             )}
