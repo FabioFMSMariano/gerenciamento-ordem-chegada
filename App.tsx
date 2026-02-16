@@ -185,8 +185,9 @@ const App: React.FC = () => {
       arrival_time: Date.now(),
       tenant_id: tenantId
     }]);
+    fetchQueues();
     setModalType(null);
-  }, [tenantId]);
+  }, [tenantId, fetchQueues]);
 
   const registerNewDriver = useCallback(async (driver: Driver) => {
     await supabase.from('drivers').insert([{
@@ -248,8 +249,12 @@ const App: React.FC = () => {
 
   const removeFromQueue = useCallback(async (targetQueueId: string) => {
     const { error } = await supabase.from('queues').delete().eq('id', targetQueueId).eq('tenant_id', tenantId);
-    if (error) console.error('Erro ao remover da fila:', error);
-  }, [tenantId]);
+    if (error) {
+      console.error('Erro ao remover da fila:', error);
+    } else {
+      fetchQueues();
+    }
+  }, [tenantId, fetchQueues]);
 
   const handleRemoveByPosition = useCallback(async (pos: number, period: Period) => {
     const targetList = period === Period.MORNING ? morningQueue : afternoonQueue;
@@ -278,7 +283,12 @@ const App: React.FC = () => {
     if (!error) {
       const targetQueue = log.period === Period.MORNING ? morningQueue : afternoonQueue;
       const queueItem = targetQueue.find(q => q.id === log.driverId);
-      if (queueItem) await removeFromQueue(queueItem.queueId);
+      if (queueItem) {
+        await removeFromQueue(queueItem.queueId);
+      } else {
+        fetchQueues();
+      }
+      fetchRecentLogs();
       setModalType(null);
       setEditingDriver(null);
     } else {
