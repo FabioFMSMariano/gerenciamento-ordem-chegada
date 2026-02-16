@@ -176,7 +176,7 @@ const App: React.FC = () => {
       tenant_id: tenantId
     }]);
     setModalType(null);
-  }, []);
+  }, [tenantId]);
 
   const registerNewDriver = useCallback(async (driver: Driver) => {
     await supabase.from('drivers').insert([{
@@ -187,7 +187,7 @@ const App: React.FC = () => {
       tenant_id: tenantId
     }]);
     setModalType(null);
-  }, []);
+  }, [tenantId]);
 
   const updateDriverInDatabase = useCallback(async (driver: Driver) => {
     await supabase.from('drivers').update({
@@ -195,9 +195,9 @@ const App: React.FC = () => {
       fleet_number: driver.fleetNumber,
       registration: driver.registration,
       company: driver.company
-    }).eq('id', driver.id);
+    }).eq('id', driver.id).eq('tenant_id', tenantId);
     fetchDriversList();
-  }, []);
+  }, [fetchDriversList, tenantId]);
 
   const removeDriverFromDatabase = useCallback(async (driverId: string) => {
     const driver = drivers.find(d => d.id === driverId);
@@ -219,10 +219,12 @@ const App: React.FC = () => {
   const executeDataPurge = useCallback(async () => {
     setLoading(true);
     try {
+      const filters = tenantId === 'ADMIN' ? {} : { tenant_id: tenantId };
+
       await Promise.all([
-        supabase.from('queues').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('exit_logs').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('drivers').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+        supabase.from('queues').delete().match(filters).neq('id', '00000000-0000-0000-0000-000000000000'),
+        supabase.from('exit_logs').delete().match(filters).neq('id', '00000000-0000-0000-0000-000000000000'),
+        supabase.from('drivers').delete().match(filters).neq('id', '00000000-0000-0000-0000-000000000000')
       ]);
       fetchData();
       alert('Sistema reiniciado.');
@@ -232,7 +234,7 @@ const App: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [fetchData]);
+  }, [fetchData, tenantId]);
 
   const removeFromQueue = useCallback(async (targetQueueId: string) => {
     await supabase.from('queues').delete().eq('id', targetQueueId);
@@ -269,7 +271,7 @@ const App: React.FC = () => {
       setModalType(null);
       setEditingDriver(null);
     }
-  }, [morningQueue, afternoonQueue, removeFromQueue]);
+  }, [morningQueue, afternoonQueue, removeFromQueue, tenantId]);
 
   const reorderQueue = useCallback(async (newList: QueueEntry[], period: Period) => {
     const baseTime = Date.now();
@@ -278,7 +280,7 @@ const App: React.FC = () => {
     );
     await Promise.all(updates);
     fetchQueues();
-  }, []);
+  }, [fetchQueues]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
