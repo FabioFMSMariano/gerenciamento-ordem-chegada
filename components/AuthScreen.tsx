@@ -62,12 +62,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ isDarkMode, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      <div className={`w-full max-w-md p-10 rounded-[48px] border-2 backdrop-blur-3xl shadow-[0_0_60px_rgba(0,0,0,0.6)] transition-all duration-500 animate-in zoom-in-95 fade-in ${isDarkMode
-        ? 'bg-slate-950/80 border-cyan-500/20 text-white'
+      <div className={`w-full max-w-md p-10 rounded-[48px] border-2 backdrop-blur-3xl shadow-[0_0_60px_rgba(0,0,0,0.8)] transition-all duration-500 animate-in zoom-in-95 fade-in ${isDarkMode
+        ? 'bg-slate-950/90 border-cyan-500/20 text-slate-100'
         : 'bg-white/95 border-slate-200 text-slate-900'
         }`}>
         <div className="flex flex-col items-center mb-10">
-          <div className="w-20 h-20 bg-cyan-600 rounded-3xl rotate-12 flex items-center justify-center text-white font-black text-4xl shadow-[0_0_30px_rgba(8,145,178,0.4)] mb-4 transition-transform hover:rotate-0 duration-500">
+          <div className="w-20 h-20 bg-cyan-600 rounded-3xl rotate-12 flex items-center justify-center text-white font-black text-4xl shadow-[0_0_30px_rgba(6,182,212,0.4)] mb-4 transition-transform hover:rotate-0 duration-500">
             <span className="-rotate-12 tracking-tighter">OC</span>
           </div>
         </div>
@@ -116,7 +116,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ isDarkMode, onSuccess }) => {
               <div className={`w-full border-t ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}></div>
             </div>
             <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
-              <span className={`px-4 ${isDarkMode ? 'bg-slate-950/80 text-white/30' : 'bg-white/95 text-slate-400'}`}>OU</span>
+              <span className={`px-4 ${isDarkMode ? 'bg-slate-950/90 text-slate-500' : 'bg-white text-slate-400'}`}>OU</span>
             </div>
           </div>
 
@@ -125,8 +125,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ isDarkMode, onSuccess }) => {
             onClick={handleGitHubLogin}
             disabled={loading}
             className={`flex items-center justify-center gap-4 py-5 rounded-3xl font-black uppercase tracking-widest text-[11px] transition-all border-2 ${isDarkMode
-              ? 'bg-slate-900 border-white/5 hover:bg-white/5 text-white'
-              : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-900 shadow-sm'
+              ? 'bg-slate-900 border-white/5 hover:bg-white/5 text-slate-100'
+              : 'bg-white border-slate-200 hover:bg-slate-100 text-slate-900 shadow-sm'
               }`}
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

@@ -342,7 +342,7 @@ const App: React.FC = () => {
       <main className="flex-1 flex flex-col p-4 lg:p-8 gap-6 overflow-y-auto relative z-10">
         <header className="flex items-center justify-between no-print mb-4">
           <div className="flex items-center gap-6">
-            <button onClick={() => setIsSidebarOpen(true)} className={`p-3.5 rounded-2xl transition-all border-2 ${isDarkMode ? 'bg-slate-900 border-cyan-500/50 text-cyan-400 shadow-[0_0_15px_rgba(0,255,255,0.2)]' : 'bg-white border-slate-200 text-slate-600 shadow-xl'}`}>
+            <button onClick={() => setIsSidebarOpen(true)} className={`p-3.5 rounded-2xl transition-all border-2 ${isDarkMode ? 'bg-slate-900 border-cyan-500/50 text-slate-400 shadow-[0_0_15px_rgba(6,182,212,0.15)]' : 'bg-white border-slate-200 text-slate-600 shadow-xl'}`}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16m-7 6h7" />
               </svg>

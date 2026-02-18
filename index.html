@@ -1,12 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ORDEM DE CHEGADA | CORE HUB</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --neon-cyan: #00ffff;
@@ -15,48 +17,75 @@
             --neon-purple: #a855f7;
             --neon-red: #ff0055;
         }
+
         body {
             margin: 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
             overflow-x: hidden;
             background: #020617;
         }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
         .map-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
-            /* Imagem de mapa de alta resolução com estilo de satélite/urbano */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
             background-image: url('https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=2674&auto=format&fit=crop');
-            background-size: cover; 
+            background-size: cover;
             background-position: center;
-            opacity: 0.12; 
-            filter: grayscale(0.8) contrast(1.4) brightness(0.8);
+            opacity: 0.08;
+            filter: grayscale(1) contrast(1.2) brightness(0.5);
             pointer-events: none;
         }
 
         .radar-scan {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            background: linear-gradient(to bottom, transparent 0%, rgba(0, 255, 255, 0.08) 50%, transparent 100%);
-            background-size: 100% 600px; animation: radar-move 8s linear infinite;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0, 255, 255, 0.05) 50%, transparent 100%);
+            background-size: 100% 600px;
+            animation: radar-move 8s linear infinite;
             pointer-events: none;
         }
 
         @keyframes radar-move {
-            0% { background-position: 0 -600px; }
-            100% { background-position: 0 100vh; }
+            0% {
+                background-position: 0 -600px;
+            }
+
+            100% {
+                background-position: 0 100vh;
+            }
         }
 
         .grid-pattern {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            background-image: linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px; pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
         }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(0, 255, 255, 0.3);
+            background: rgba(0, 255, 255, 0.2);
             border-radius: 10px;
         }
 
@@ -64,7 +93,10 @@
             content: " ";
             display: block;
             position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
             z-index: 100;
             background-size: 100% 4px, 3px 100%;
@@ -73,16 +105,26 @@
         }
 
         @media print {
-            .no-print { display: none !important; }
-            body { background: white !important; }
-            .map-overlay { display: none !important; }
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background: white !important;
+            }
+
+            .map-overlay {
+                display: none !important;
+            }
         }
     </style>
-<!-- Vite cuidará das dependências automaticamente -->
-<link rel="stylesheet" href="/index.css">
+    <!-- Vite cuidará das dependências automaticamente -->
+    <link rel="stylesheet" href="/index.css">
 </head>
+
 <body class="scanline">
     <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

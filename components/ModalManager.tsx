@@ -67,11 +67,11 @@ const ModalManager: React.FC<ModalManagerProps> = (props) => {
   if (!props.type || props.type === 'login') return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-lg p-4 no-print animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 backdrop-blur-lg p-4 no-print animate-in fade-in duration-300">
       <div className={`relative w-full rounded-[32px] shadow-2xl overflow-hidden flex flex-col border transition-all duration-300 
         ${isMaximized ? 'max-w-[98vw] h-[95vh]' : 'max-w-xl max-h-[95vh]'} 
         ${['driver-productivity', 'history-reports', 'queue-frequency'].includes(props.type) ? 'max-w-7xl' : ''} 
-        ${props.isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-slate-100 text-slate-800'}`}>
+        ${props.isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-100 text-slate-800'}`}>
 
         <div className="px-8 py-6 flex justify-between items-center border-b border-white/5 shrink-0">
           <div>
@@ -184,6 +184,16 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
     }
   };
 
+  const handleDeleteLog = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este registro permanentemente?')) return;
+    const { error } = await supabase.from('exit_logs').delete().eq('id', id);
+    if (!error) {
+      setLogs(prev => prev.filter(l => l.id !== id));
+    } else {
+      alert('Erro ao excluir registro.');
+    }
+  };
+
   const filtered = useMemo(() => {
     return logs.filter(l => {
       return l.name.toLowerCase().includes(filter.toLowerCase()) ||
@@ -212,7 +222,7 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
       sections: [{
         children: [
           new Paragraph({
-            children: [new TextRun({ text: "HISTÓRICO DE ARQUIVOS", bold: true, size: 32, color: "0891B2" })],
+            children: [new TextRun({ text: "HISTÓRICO DE ARQUIVOS", bold: true, size: 32, color: "71717a" })],
             alignment: AlignmentType.CENTER, spacing: { after: 400 }
           }),
           new Table({
@@ -221,7 +231,7 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
               new TableRow({
                 children: ["DATA", "NOME", "FROTA", "MATR.", "ZONA", "DT", "VOL"].map(text =>
                   new TableCell({
-                    children: [new Paragraph({ children: [new TextRun({ text, bold: true, color: "0891B2" })], alignment: AlignmentType.CENTER })]
+                    children: [new Paragraph({ children: [new TextRun({ text, bold: true, color: "71717a" })], alignment: AlignmentType.CENTER })]
                   })
                 ),
               }),
@@ -285,6 +295,7 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
                 <th className="px-6 py-4">Zona</th>
                 <th className="px-6 py-4">DT</th>
                 <th className="px-6 py-4 text-center">Volume</th>
+                <th className="px-6 py-4 text-center">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -310,10 +321,26 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
 
                       <button
                         onClick={() => handleAdjustVolume(l.id, l.ordersCount, 1)}
-                        className={`w-8 h-8 flex items-center justify-center rounded-full font-black transition-all active:scale-90 ${isDarkMode ? 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-200'
+                        className={`w-8 h-8 flex items-center justify-center rounded-full font-black transition-all active:scale-90 ${isDarkMode ? 'bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500 hover:text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-600 hover:text-white border border-slate-200'
                           }`}
                       >
                         +
+                      </button>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-center">
+                      <button
+                        onClick={() => handleDeleteLog(l.id)}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${isDarkMode
+                          ? 'bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white'
+                          : 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-100'
+                          }`}
+                        title="Excluir Registro"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                       </button>
                     </div>
                   </td>
@@ -399,7 +426,7 @@ const DriverProductivityView: React.FC<{ isDarkMode: boolean; drivers: Driver[] 
       sections: [{
         children: [
           new Paragraph({
-            children: [new TextRun({ text: "MÉTRICAS DE PRODUTIVIDADE", bold: true, size: 32, color: "0891B2" })],
+            children: [new TextRun({ text: "MÉTRICAS DE PRODUTIVIDADE", bold: true, size: 32, color: "71717a" })],
             alignment: AlignmentType.CENTER, spacing: { after: 400 }
           }),
           new Paragraph({
@@ -412,7 +439,7 @@ const DriverProductivityView: React.FC<{ isDarkMode: boolean; drivers: Driver[] 
               new TableRow({
                 children: ["DATA", "HORA", "ZONA", "FREQ. ZONA", "VOL"].map(text =>
                   new TableCell({
-                    children: [new Paragraph({ children: [new TextRun({ text, bold: true, color: "0891B2" })], alignment: AlignmentType.CENTER })]
+                    children: [new Paragraph({ children: [new TextRun({ text, bold: true, color: "71717a" })], alignment: AlignmentType.CENTER })]
                   })
                 ),
               }),
@@ -487,9 +514,9 @@ const DriverProductivityView: React.FC<{ isDarkMode: boolean; drivers: Driver[] 
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <StatCard title="Saídas" value={loading ? '...' : stats.exits} icon="🚚" color="cyan" isDarkMode={isDarkMode} />
-              <StatCard title="Total Volumes" value={loading ? '...' : stats.volume} icon="📦" color="emerald" isDarkMode={isDarkMode} />
-              <StatCard title="Média Vol" value={loading ? '...' : stats.avg} icon="📈" color="purple" isDarkMode={isDarkMode} />
+              <StatCard title="Saídas" value={loading ? '...' : stats.exits} icon="🚚" color="cyan-500" isDarkMode={isDarkMode} />
+              <StatCard title="Total Volumes" value={loading ? '...' : stats.volume} icon="📦" color="emerald-500" isDarkMode={isDarkMode} />
+              <StatCard title="Média Vol" value={loading ? '...' : stats.avg} icon="📈" color="amber-500" isDarkMode={isDarkMode} />
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
@@ -526,7 +553,7 @@ const StatCard: React.FC<{ title: string; value: string | number; icon: string; 
       <span className="text-[10px] font-black uppercase tracking-widest opacity-40">{title}</span>
       <span className="text-2xl">{icon}</span>
     </div>
-    <div className={`text-4xl font-black tracking-tighter ${color === 'cyan' ? 'text-cyan-500' : color === 'emerald' ? 'text-emerald-500' : 'text-purple-500'}`}>
+    <div className={`text-4xl font-black tracking-tighter ${color === 'cyan-500' ? 'text-cyan-500' : color === 'emerald-500' ? 'text-emerald-500' : 'text-amber-500'}`}>
       {value}
     </div>
   </div>
@@ -590,7 +617,7 @@ const DeleteDriverView: React.FC<{ isDarkMode: boolean; drivers: Driver[]; onUpd
                 </div>
                 <input className={`p-3 rounded-xl border font-black uppercase text-xs ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-white'}`} value={editForm.company} onChange={e => setEditForm({ ...editForm, company: e.target.value.toUpperCase() })} />
                 <div className="flex gap-2">
-                  <button onClick={handleSaveEdit} className="flex-1 bg-emerald-600 text-white p-3 rounded-xl font-black text-[10px] uppercase">Salvar Alterações</button>
+                  <button onClick={handleSaveEdit} className="flex-1 bg-cyan-700 text-white p-3 rounded-xl font-black text-[10px] uppercase">Salvar Alterações</button>
                   <button onClick={() => setEditingId(null)} className="flex-1 bg-slate-500 text-white p-3 rounded-xl font-black text-[10px] uppercase">Cancelar</button>
                 </div>
               </div>
@@ -669,7 +696,7 @@ const ExitForm: React.FC<{ isDarkMode: boolean; driver: QueueEntry; period: Peri
           </div>
         </div>
       </div>
-      <button className="bg-emerald-600 text-white p-6 rounded-[24px] font-black uppercase tracking-[0.2em] shadow-lg transition-all hover:bg-emerald-500">Confirmar Saída</button>
+      <button className="bg-cyan-600 text-white p-6 rounded-[24px] font-black uppercase tracking-[0.2em] shadow-lg transition-all hover:bg-cyan-500">Confirmar Saída</button>
     </form>
   );
 };
@@ -782,12 +809,12 @@ const QueueFrequencyView: React.FC<{ isDarkMode: boolean; morningQueue: QueueEnt
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {targetCompanies.map(company => (
               <div key={company} className="flex flex-col gap-4">
-                <h5 className="text-xl font-black uppercase tracking-widest text-cyan-500 mono border-b-2 border-cyan-500/20 pb-3">{company}</h5>
+                <h5 className="text-xl font-black uppercase tracking-widest text-slate-500 mono border-b-2 border-slate-500/20 pb-3">{company}</h5>
                 <div className="flex flex-col gap-2 min-h-[50px]">
                   {frequencyData[period][company].map((entry) => (
                     <div key={entry.name} className={`px-5 py-3.5 rounded-2xl border flex items-center justify-between ${isDarkMode ? 'bg-slate-900 border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
                       <span className="font-black uppercase text-sm truncate">{entry.name}</span>
-                      <span className={`text-[8px] font-black px-2 py-1 rounded-lg uppercase ${entry.status === 'FILA' ? 'bg-cyan-500/10 text-cyan-500' : 'bg-slate-500/10 text-slate-500'}`}>
+                      <span className={`text-[8px] font-black px-2 py-1 rounded-lg uppercase ${entry.status === 'FILA' ? 'bg-cyan-500/10 text-cyan-500' : 'bg-slate-500/10 text-slate-500 opacity-50'}`}>
                         {entry.status === 'FILA' ? 'EM FILA' : 'SAIU'}
                       </span>
                     </div>
@@ -838,7 +865,7 @@ const RegisterTenantForm: React.FC<{ isDarkMode: boolean; onSave: () => void }> 
         <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4">CÓDIGO DE ACESSO (PIN)</label>
         <input placeholder="EX: 1234" required type="password" inputMode="numeric" className={`p-5 rounded-2xl border font-black mono text-center text-3xl ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={pin} onChange={e => setPin(e.target.value)} />
       </div>
-      <button disabled={loading} className="bg-cyan-600 text-white p-6 rounded-[24px] font-black uppercase tracking-widest mt-4 shadow-xl transition-all hover:bg-cyan-500 active:scale-95 disabled:opacity-50">
+      <button disabled={loading} className="bg-cyan-700 text-white p-6 rounded-[24px] font-black uppercase tracking-widest mt-4 shadow-xl transition-all hover:bg-cyan-600 active:scale-95 disabled:opacity-50">
         {loading ? 'CRIANDO...' : 'CRIAR NOVO WORKSPACE'}
       </button>
     </form>
@@ -872,7 +899,7 @@ const RegisterOperatorForm: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode })
 
   return (
     <form onSubmit={handleRegister} className="flex flex-col gap-6">
-      <div className="p-6 rounded-[32px] bg-indigo-600 text-white shadow-xl mb-4">
+      <div className="p-6 rounded-[32px] bg-cyan-700 text-white shadow-xl mb-4">
         <span className="text-[10px] font-black uppercase opacity-60 tracking-widest">Acesso ao Terminal</span>
         <div className="font-black text-2xl tracking-tighter mt-1 uppercase">NOVO OPERADOR</div>
       </div>
@@ -903,14 +930,14 @@ const RegisterOperatorForm: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode })
       </div>
 
       {msg && (
-        <div className={`p-4 rounded-xl font-black text-[10px] uppercase text-center ${msg.type === 'success' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+        <div className={`p-4 rounded-xl font-black text-[10px] uppercase text-center ${msg.type === 'success' ? 'bg-cyan-500/10 text-cyan-500' : 'bg-red-500/10 text-red-500'}`}>
           {msg.text}
         </div>
       )}
 
       <button
         disabled={loading}
-        className="bg-indigo-600 text-white p-6 rounded-[24px] font-black uppercase tracking-[0.2em] shadow-lg transition-all hover:bg-indigo-500 disabled:opacity-50"
+        className="bg-cyan-700 text-white p-6 rounded-[24px] font-black uppercase tracking-[0.2em] shadow-lg transition-all hover:bg-cyan-600 disabled:opacity-50"
       >
         {loading ? 'CADASTRANDO...' : 'CRIAR ACESSO'}
       </button>
@@ -969,10 +996,10 @@ const SecurityChallengeView: React.FC<{
       <div className="flex flex-col gap-4 w-full max-w-sm">
         <div className="flex flex-col gap-1">
           <label className="text-[10px] font-black uppercase opacity-40 tracking-[0.2em]">INSIRA O CÓDIGO DE SEGURANÇA</label>
-          <div className="text-4xl font-black tracking-[0.5em] text-cyan-500 my-4 select-none">
+          <div className="text-4xl font-black tracking-[0.5em] text-slate-500 my-4 select-none">
             {challenge.code}
           </div>
-          <p className="text-[10px] font-black uppercase text-amber-500 animate-pulse mb-4">
+          <p className="text-[10px] font-black uppercase text-slate-500 animate-pulse mb-4">
             EXPIRA EM {timeLeft} SEGUNDOS
           </p>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
