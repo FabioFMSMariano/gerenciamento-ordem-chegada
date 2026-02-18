@@ -110,7 +110,7 @@ const QueueColumn: React.FC<QueueColumnProps> = ({
         </div>
       )}
 
-      <div className={`p-8 rounded-[40px] border-2 transition-all ${isDarkMode ? 'bg-slate-900/60 border-white/5 shadow-2xl' : 'bg-white border-slate-200 shadow-xl'}`}>
+      <div className={`p-8 rounded-[40px] border-2 transition-all ${isDarkMode ? 'bg-slate-900/60 border-white/5 shadow-2xl' : 'bg-slate-50/80 border-slate-200 shadow-xl'}`}>
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <div className={`w-4 h-4 rounded-full ${periodColors.bg} animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.5)]`} />

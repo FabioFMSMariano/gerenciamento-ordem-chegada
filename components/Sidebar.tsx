@@ -22,7 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, isDarkMode, toggleDarkMode, o
 
       <aside className={`
         fixed top-0 left-0 h-full w-80 flex flex-col p-8 gap-8 z-[70] transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) shadow-2xl no-print overflow-y-auto custom-scrollbar
-        ${isDarkMode ? 'bg-slate-900 border-r border-slate-800 text-slate-200' : 'bg-white border-r border-slate-100 text-slate-800'}
+        ${isDarkMode ? 'bg-slate-900 border-r border-slate-800 text-slate-200' : 'bg-slate-50 border-r border-slate-200 text-slate-800'}
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex justify-between items-center shrink-0">

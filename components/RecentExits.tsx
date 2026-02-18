@@ -52,7 +52,7 @@ const RecentExits: React.FC<RecentExitsProps> = ({ logs, isDarkMode }) => {
               key={log.id}
               className={`p-5 rounded-[28px] border transition-all hover:border-cyan-500/50 relative overflow-hidden group ${isDarkMode
                 ? 'bg-slate-900/80 border-white/5 shadow-2xl shadow-cyan-900/5'
-                : 'bg-white border-slate-200 shadow-sm'
+                : 'bg-slate-50 border-slate-200 shadow-sm'
                 }`}
             >
               {/* Header: Nome e Badge de Tempo */}

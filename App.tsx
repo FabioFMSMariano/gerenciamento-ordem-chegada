@@ -323,7 +323,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className={`min-h-screen flex font-sans transition-all duration-700 relative overflow-x-hidden ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+    <div className={`min-h-screen flex font-sans transition-all duration-700 relative overflow-x-hidden ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-900'}`}>
       <div className="map-overlay" />
       <div className="grid-pattern" />
       <div className="radar-scan no-print" />
