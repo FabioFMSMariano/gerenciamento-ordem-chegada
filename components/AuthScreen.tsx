@@ -77,10 +77,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ isDarkMode, onSuccess }) => {
             <label className="text-center text-[10px] font-black uppercase tracking-[0.3em] opacity-40">CÓDIGO DE ACESSO</label>
             <input
               type="password"
-              inputMode="numeric"
-              pattern="[0-9]*"
               required
-              placeholder="••••"
+              placeholder="CÓDIGO DE ACESSO"
               autoFocus
               className={`w-full px-8 py-8 rounded-[32px] border-4 outline-none font-black mono text-4xl text-center tracking-[0.5em] transition-all shadow-inner ${isDarkMode
                 ? 'bg-slate-900 border-white/5 focus:border-cyan-500/50 text-white'
