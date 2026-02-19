@@ -1027,3 +1027,65 @@ const SecurityChallengeView: React.FC<{
     </div>
   );
 };
+
+const ManageOperatorPINView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
+  const [operators, setOperators] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [targetPin, setTargetPin] = useState('1984@1984');
+
+  const fetchOperators = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase.from('operator_access').select('*');
+    if (data) setOperators(data);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchOperators();
+  }, [fetchOperators]);
+
+  const handleUpdate = async (id: string) => {
+    const { error } = await supabase.from('operator_access').update({ pin: targetPin }).eq('id', id);
+    if (!error) {
+      alert('PIN atualizado com sucesso!');
+      fetchOperators();
+    } else {
+      alert('Erro ao atualizar: ' + error.message);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="p-6 rounded-[32px] bg-cyan-700 text-white shadow-xl">
+        <span className="text-[10px] font-black uppercase opacity-60 tracking-widest">Administração</span>
+        <div className="font-black text-2xl tracking-tighter mt-1">GESTÃO DE ACESSO (PINS)</div>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <label className="text-[10px] font-black uppercase opacity-40 ml-2 tracking-widest">NOVO PIN PARA DEFINIR</label>
+        <input
+          className={`p-5 rounded-2xl border font-black uppercase ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`}
+          value={targetPin}
+          onChange={e => setTargetPin(e.target.value)}
+        />
+      </div>
+
+      <div className="flex flex-col gap-4">
+        {operators.map(op => (
+          <div key={op.id} className={`p-6 rounded-3xl border flex items-center justify-between ${isDarkMode ? 'bg-slate-900 border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+            <div>
+              <div className="text-[10px] font-black uppercase opacity-40">{op.label || 'Sem Nome'}</div>
+              <div className="text-xl font-black mono text-cyan-500">{op.pin}</div>
+            </div>
+            <button
+              onClick={() => handleUpdate(op.id)}
+              className="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+            >
+              DEFINIR NOVO PIN
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
