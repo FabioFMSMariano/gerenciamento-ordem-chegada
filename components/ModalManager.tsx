@@ -88,6 +88,7 @@ const ModalManager: React.FC<ModalManagerProps> = (props) => {
               {props.type === 'queue-frequency' && 'Frequência de Fila (Hoje)'}
               {props.type === 'register-tenant' && 'Novo Inquilino / Workspace'}
               {props.type === 'security-challenge' && '🔒 Acesso Restrito'}
+              {props.type === 'manage-pins' && 'Gestão de PINS'}
             </h2>
           </div>
           <div className="flex items-center gap-2">
@@ -119,6 +120,7 @@ const ModalManager: React.FC<ModalManagerProps> = (props) => {
                 onRetry={props.onClearAllOperationalData || (() => { })}
               />
             )}
+            {props.type === 'manage-pins' && <ManageOperatorPINView isDarkMode={props.isDarkMode} />}
           </Suspense>
         </div>
       </div>
