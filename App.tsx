@@ -382,7 +382,7 @@ const App: React.FC = () => {
 
         <div className={`flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[1fr_320px_1fr] gap-8 items-start max-w-[1700px] mx-auto w-full transition-opacity duration-500 ${loading ? 'opacity-30' : 'opacity-100'}`}>
           <QueueColumn period={Period.MORNING} queue={morningQueue} isDarkMode={isDarkMode} onAddClick={() => { setSelectedPeriod(Period.MORNING); startTransition(() => setModalType('include')); }} onExitClick={(d) => { setSelectedPeriod(Period.MORNING); setEditingDriver(d); startTransition(() => setModalType('exit')); }} onRemove={removeFromQueue} onReorder={(l) => reorderQueue(l, Period.MORNING)} onClear={() => { }} onUpdate={() => { }} />
-          <RecentExits logs={exitLogs} isDarkMode={isDarkMode} />
+          <RecentExits logs={exitLogs} isDarkMode={isDarkMode} onAdjustVolume={updateLogVolume} />
           <QueueColumn period={Period.AFTERNOON} queue={afternoonQueue} isDarkMode={isDarkMode} onAddClick={() => { setSelectedPeriod(Period.AFTERNOON); startTransition(() => setModalType('include')); }} onExitClick={(d) => { setSelectedPeriod(Period.AFTERNOON); setEditingDriver(d); startTransition(() => setModalType('exit')); }} onRemove={removeFromQueue} onReorder={(l) => reorderQueue(l, Period.AFTERNOON)} onClear={() => { }} onUpdate={() => { }} />
         </div>
       </main>
