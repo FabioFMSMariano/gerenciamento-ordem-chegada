@@ -153,6 +153,29 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // Auto-fix para renomeação (BEMOL TORRES)
+    if (tenantLabel && (tenantLabel.toUpperCase() === 'TERMINAL PRINCIPAL' || tenantLabel === 'Terminal Principal')) {
+      console.log('Detectado Terminal Principal. Tentando renomear para BEMOL TORRES...');
+      supabase.from('operator_access')
+        .update({ label: 'BEMOL TORRES' })
+        .eq('id', tenantId)
+        .then(({ error }) => {
+          if (!error) {
+            console.log('Renomeado com sucesso!');
+            setTenantLabel('BEMOL TORRES');
+            // Atualiza o localStorage para manter a consistência
+            const guestData = localStorage.getItem('terminal_guest_session');
+            if (guestData) {
+              const guest = JSON.parse(guestData);
+              guest.label = 'BEMOL TORRES';
+              localStorage.setItem('terminal_guest_session', JSON.stringify(guest));
+            }
+          }
+        });
+    }
+  }, [tenantId, tenantLabel]);
+
+  useEffect(() => {
     if (!session || !tenantId) return;
 
     fetchData();
