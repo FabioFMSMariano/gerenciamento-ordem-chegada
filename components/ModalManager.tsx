@@ -11,7 +11,13 @@ if (typeof window !== 'undefined') {
   ChartJS.register(...registerables);
 }
 
-const ZONES_LIST = ["NORTE", "OESTE", "CENTRO OESTE", "CENTRO SUL", "SUL", "LESTE"];
+const ZONES_LIST = [
+  "NORTE", "NORTE1", "NORTE 2", "NORTE-NORTE1", "NORTE-NORTE1-NORTE 2",
+  "OESTE", "OESTE 1", "OESTE-OESTE 1", "OESTE-OESTE 1-C. OESTE", "OESTE-OESTE 1-C. SUL",
+  "CENTRO OESTE", "CENTRO SUL", "C. OESTE-C. SUL",
+  "SUL", "SUL1", "SUL 2", "SUL1-SUL2", "SUL-SUL1-SUL2", "SUL-SUL2",
+  "LESTE", "LESTE 1", "LESTE-LESTE1"
+];
 
 interface ModalManagerProps {
   type: string | null;
