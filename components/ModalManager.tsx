@@ -667,7 +667,13 @@ const IncludeInQueue: React.FC<{ isDarkMode: boolean; drivers: Driver[]; onSelec
   const filtered = drivers.filter(d => d.name.toLowerCase().includes(search.toLowerCase()));
   return (
     <div className="flex flex-col gap-4">
-      <input placeholder="LOCALIZAR ENTREGADOR..." className={`p-5 rounded-2xl border font-black uppercase tracking-tighter ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`} value={search} onChange={e => setSearch(e.target.value)} />
+      <input
+        autoFocus
+        placeholder="LOCALIZAR ENTREGADOR..."
+        className={`p-5 rounded-2xl border font-black uppercase tracking-tighter ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+      />
       <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto custom-scrollbar">
         {filtered.map(d => (
           <button key={d.id} onClick={() => onSelect(d)} className={`p-6 rounded-[28px] border text-left hover:border-cyan-500 transition-all active:scale-[0.98] ${isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
