@@ -231,7 +231,7 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [
               new TableRow({
-                children: ["DATA", "NOME", "FROTA", "MATR.", "ZONA", "DT", "VOL"].map(text =>
+                children: ["DATA", "HORA", "NOME", "FROTA", "MATR.", "ZONA", "DT", "VOL"].map(text =>
                   new TableCell({
                     children: [new Paragraph({ children: [new TextRun({ text, bold: true, color: "71717a" })], alignment: AlignmentType.CENTER })]
                   })
@@ -240,6 +240,7 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
               ...data.map(item => new TableRow({
                 children: [
                   new TableCell({ children: [new Paragraph(item.Data)] }),
+                  new TableCell({ children: [new Paragraph(item.Hora)] }),
                   new TableCell({ children: [new Paragraph(item.Nome)] }),
                   new TableCell({ children: [new Paragraph(item.Frota)] }),
                   new TableCell({ children: [new Paragraph(item.Matrícula)] }),
@@ -291,6 +292,7 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
             <thead>
               <tr className={`${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50'} text-[10px] font-black uppercase tracking-widest opacity-60`}>
                 <th className="px-6 py-4">Data</th>
+                <th className="px-6 py-4">Hora</th>
                 <th className="px-6 py-4">Nome</th>
                 <th className="px-6 py-4">Frota</th>
                 <th className="px-6 py-4">Matrícula</th>
@@ -304,6 +306,9 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
               {filtered.map(l => (
                 <tr key={l.id} className={`hover:bg-cyan-500/5 transition-colors ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                   <td className="px-6 py-4 mono text-[10px]">{formatDateBR(l.date)}</td>
+                  <td className="px-6 py-4 mono text-[10px] font-black text-cyan-500">
+                    {new Date(l.exitTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </td>
                   <td className="px-6 py-4 font-black uppercase text-xs">{l.name}</td>
                   <td className="px-6 py-4 font-black mono text-[10px] opacity-70">{l.fleetNumber}</td>
                   <td className="px-6 py-4 font-black mono text-[10px] opacity-70">{l.registration}</td>
@@ -772,6 +777,7 @@ const QueueFrequencyView: React.FC<{ isDarkMode: boolean; morningQueue: QueueEnt
     const processSet = (p: Period, qItems: QueueEntry[], logsToday: ExitLog[]) => {
       const uniqueDrivers = new Map<string, { company: string; status: 'FILA' | 'SAIDA', time: number }>();
 
+      // Adiciona motoristas que já saíram hoje neste período
       logsToday.filter(l => l.period === p).forEach(l => {
         const comp = (l.company || '').toUpperCase().trim();
         if (targetCompanies.includes(comp)) {
@@ -779,10 +785,15 @@ const QueueFrequencyView: React.FC<{ isDarkMode: boolean; morningQueue: QueueEnt
         }
       });
 
+      // Adiciona motoristas que ainda estão na fila neste período
       qItems.forEach(q => {
         const comp = (q.company || '').toUpperCase().trim();
-        if (targetCompanies.includes(comp) && !uniqueDrivers.has(q.name)) {
-          uniqueDrivers.set(q.name, { company: comp, status: 'FILA', time: q.arrivalTime });
+        if (targetCompanies.includes(comp)) {
+          // Se já estiver no Map como SAIDA, não sobrescreve (já saiu, mantém o status SAIDA)
+          // Se não estiver, adiciona como FILA
+          if (!uniqueDrivers.has(q.name)) {
+            uniqueDrivers.set(q.name, { company: comp, status: 'FILA', time: q.arrivalTime });
+          }
         }
       });
 
@@ -792,7 +803,10 @@ const QueueFrequencyView: React.FC<{ isDarkMode: boolean; morningQueue: QueueEnt
         }
       });
 
-      targetCompanies.forEach(c => data[p][c].sort((a, b) => a.time - b.time));
+      // Ordena por tempo (chegada ou saída)
+      targetCompanies.forEach(c => {
+        data[p][c].sort((a, b) => a.time - b.time);
+      });
     };
 
     const todayLogs = logs.filter(l => l.date === today);
