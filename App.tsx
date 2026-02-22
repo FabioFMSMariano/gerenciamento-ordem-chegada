@@ -306,6 +306,14 @@ const App: React.FC = () => {
     fetchQueues();
   }, [fetchQueues]);
 
+  const updateLogVolume = useCallback(async (id: string, currentVal: number, delta: number) => {
+    const newVal = Math.max(0, currentVal + delta);
+    const { error } = await supabase.from('exit_logs').update({ orders_count: newVal }).eq('id', id).eq('tenant_id', tenantId);
+    if (error) {
+      alert('Erro ao atualizar volume.');
+    }
+  }, [tenantId]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     localStorage.removeItem('terminal_guest_session');

@@ -5,9 +5,10 @@ import { ExitLog } from '../types';
 interface RecentExitsProps {
   logs: ExitLog[];
   isDarkMode: boolean;
+  onAdjustVolume: (id: string, currentVal: number, delta: number) => void;
 }
 
-const RecentExits: React.FC<RecentExitsProps> = ({ logs, isDarkMode }) => {
+const RecentExits: React.FC<RecentExitsProps> = ({ logs, isDarkMode, onAdjustVolume }) => {
   // Mantém apenas as 4 últimas saídas conforme solicitado
   const recentLogs = logs.slice(0, 4);
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
@@ -82,13 +83,30 @@ const RecentExits: React.FC<RecentExitsProps> = ({ logs, isDarkMode }) => {
                     </svg>
                   </button>
 
-                  {/* Badge de Volume - Estilo Pill para visibilidade clara */}
-                  <div className={`px-4 py-3 rounded-2xl border flex items-center gap-2 shadow-sm shrink-0 min-w-[75px] justify-center ${isDarkMode
+                  {/* Badge de Volume - Com controles de ajuste */}
+                  <div className={`px-4 py-3 rounded-2xl border flex items-center gap-3 shadow-sm shrink-0 min-w-[90px] justify-between ${isDarkMode
                     ? 'bg-slate-800/60 border-cyan-500/30 text-slate-300'
                     : 'bg-slate-50 border-slate-200 text-slate-600'
                     }`}>
-                    <span className="text-[10px] font-black uppercase tracking-tighter opacity-50">VOL</span>
-                    <span className="text-sm font-black mono leading-none">{log.ordersCount || 0}</span>
+                    <div className="flex flex-col items-start">
+                      <span className="text-[8px] font-black uppercase tracking-tighter opacity-50 block mb-0.5">VOL</span>
+                      <span className="text-base font-black mono leading-none">{log.ordersCount || 0}</span>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() => onAdjustVolume(log.id, log.ordersCount, 1)}
+                        className={`w-5 h-5 flex items-center justify-center rounded-md text-xs font-black transition-all active:scale-90 ${isDarkMode ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500 hover:text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-600 hover:text-white'}`}
+                      >
+                        +
+                      </button>
+                      <button
+                        onClick={() => onAdjustVolume(log.id, log.ordersCount, -1)}
+                        className={`w-5 h-5 flex items-center justify-center rounded-md text-xs font-black transition-all active:scale-90 ${isDarkMode ? 'bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white' : 'bg-slate-200 text-slate-700 hover:bg-red-600 hover:text-white'}`}
+                      >
+                        -
+                      </button>
+                    </div>
                   </div>
                 </div>
 
