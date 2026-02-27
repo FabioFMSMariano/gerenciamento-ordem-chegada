@@ -777,7 +777,7 @@ interface FrequencyEntry {
 }
 
 const QueueFrequencyView: React.FC<{ isDarkMode: boolean; morningQueue: QueueEntry[]; afternoonQueue: QueueEntry[]; logs: ExitLog[] }> = ({ isDarkMode, morningQueue, afternoonQueue, logs }) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toLocaleDateString('en-CA');
   const targetCompanies = ["INNOVATIVE", "NAVEGAM"];
 
   const frequencyData = useMemo(() => {

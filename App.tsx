@@ -71,14 +71,14 @@ const App: React.FC = () => {
   }, [tenantId]);
 
   const fetchRecentLogs = useCallback(async () => {
-    if (!tenantId) return;
+    const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
     let query = supabase.from('exit_logs').select('*');
     if (tenantId !== 'ADMIN') {
       query = query.eq('tenant_id', tenantId);
     }
     const { data } = await query
-      .order('exit_time', { ascending: false })
-      .limit(10);
+      .eq('date', today)
+      .order('exit_time', { ascending: false });
 
     if (data) {
       const formattedLogs = data.map((l: any) => ({
@@ -298,7 +298,7 @@ const App: React.FC = () => {
       orders_count: log.ordersCount,
       period: log.period,
       exit_time: Date.now(),
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toLocaleDateString('en-CA'),
       tenant_id: tenantId
     };
 
