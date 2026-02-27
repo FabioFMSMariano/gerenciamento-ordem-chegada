@@ -142,6 +142,8 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
   const [filter, setFilter] = useState('');
   const [logs, setLogs] = useState<ExitLog[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 50;
 
   const [startDate, setStartDate] = useState<string>(() => {
     const d = new Date();
@@ -150,17 +152,20 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
   });
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
-  const fetchHistory = useCallback(async () => {
+  const fetchHistory = useCallback(async (isLoadMore = false) => {
     setLoading(true);
+    const currentOffset = isLoadMore ? logs.length : 0;
+
     const { data, error } = await supabase
       .from('exit_logs')
       .select('*')
       .gte('date', startDate)
       .lte('date', endDate)
-      .order('exit_time', { ascending: false });
+      .order('exit_time', { ascending: false })
+      .range(currentOffset, currentOffset + PAGE_SIZE - 1);
 
     if (data && !error) {
-      setLogs(data.map((l: any) => ({
+      const newLogs = data.map((l: any) => ({
         id: l.id,
         driverId: l.driver_id,
         name: l.name,
@@ -173,14 +178,21 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
         exitTime: l.exit_time,
         period: l.period as Period,
         date: l.date
-      })));
+      }));
+
+      if (isLoadMore) {
+        setLogs(prev => [...prev, ...newLogs]);
+      } else {
+        setLogs(newLogs);
+      }
+      setHasMore(data.length === PAGE_SIZE);
     }
     setLoading(false);
-  }, [startDate, endDate]);
+  }, [startDate, endDate, logs.length]);
 
   useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
+    fetchHistory(false);
+  }, [startDate, endDate]); // Só recarrega do zero se as datas mudarem
 
   const handleAdjustVolume = async (id: string, currentVal: number, delta: number) => {
     const newVal = Math.max(0, currentVal + delta);
@@ -200,6 +212,21 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
     } else {
       alert('Erro ao excluir registro.');
     }
+  };
+
+  const handleArchive = async () => {
+    if (!confirm('Deseja arquivar todos os registros com mais de 180 dias? Eles serão movidos para o arquivo e não aparecerão mais nas buscas do dia a dia.')) return;
+
+    setLoading(true);
+    const { data: movedCount, error } = await supabase.rpc('archive_old_logs', { days_threshold: 180 });
+
+    if (error) {
+      alert('Erro ao arquivar: ' + error.message + '\nCertifique-se de ter executado os scripts SQL fornecidos.');
+    } else {
+      alert(`${movedCount} registros foram movidos para o arquivo com sucesso!`);
+      fetchHistory(false);
+    }
+    setLoading(false);
   };
 
   const filtered = useMemo(() => {
@@ -286,6 +313,7 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
         />
 
         <div className="flex flex-wrap items-center gap-3">
+          <button onClick={handleArchive} className={`flex-1 p-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 ${isDarkMode ? 'bg-amber-600/20 text-amber-500 hover:bg-amber-600 hover:text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-700 hover:text-white border border-amber-200'}`}>📦 ARQUIVAR ANTIGOS</button>
           <button onClick={handleExportExcel} className="flex-1 bg-emerald-600 text-white p-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-500 flex items-center justify-center gap-2">📊 EXCEL</button>
           <button onClick={handleExportCSV} className="flex-1 bg-emerald-700 text-white p-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 flex items-center justify-center gap-2">📄 CSV</button>
           <button onClick={handleExportWord} className="flex-1 bg-blue-600 text-white p-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-500 flex items-center justify-center gap-2">📝 WORD</button>
@@ -362,6 +390,21 @@ const HistoryReportView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =>
             </tbody>
           </table>
         </div>
+
+        {hasMore && (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => fetchHistory(true)}
+              disabled={loading}
+              className={`px-12 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all active:scale-95 ${isDarkMode
+                ? 'bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500 hover:text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-600 hover:text-white'
+                }`}
+            >
+              {loading ? 'Carregando...' : 'Carregar Mais Registros'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
