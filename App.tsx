@@ -331,11 +331,16 @@ const App: React.FC = () => {
 
   const updateLogVolume = useCallback(async (id: string, currentVal: number, delta: number) => {
     const newVal = Math.max(0, currentVal + delta);
+    // Atualização otimista na UI
+    setExitLogs(prev => prev.map(l => l.id === id ? { ...l, ordersCount: newVal } : l));
+
     const { error } = await supabase.from('exit_logs').update({ orders_count: newVal }).eq('id', id).eq('tenant_id', tenantId);
     if (error) {
       alert('Erro ao atualizar volume.');
+      // Reverte se der erro
+      fetchRecentLogs();
     }
-  }, [tenantId]);
+  }, [tenantId, fetchRecentLogs]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
