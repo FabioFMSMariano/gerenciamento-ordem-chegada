@@ -415,6 +415,8 @@ const DriverProductivityView: React.FC<{ isDarkMode: boolean; drivers: Driver[] 
   const [historicalLogs, setHistoricalLogs] = useState<ExitLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 50;
 
   const [startDate, setStartDate] = useState<string>(() => {
     const d = new Date();
@@ -423,29 +425,52 @@ const DriverProductivityView: React.FC<{ isDarkMode: boolean; drivers: Driver[] 
   });
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
-  useEffect(() => {
+  const fetchDriverHistory = useCallback(async (isLoadMore = false) => {
     if (!selectedId) return;
     setLoading(true);
-    supabase.from('exit_logs').select('*').eq('driver_id', selectedId).order('exit_time', { ascending: true })
-      .then(({ data }) => {
-        if (data) {
-          setHistoricalLogs(data.map((l: any) => ({
-            ...l,
-            ordersCount: l.orders_count,
-            fleetNumber: l.fleet_number,
-            driverId: l.driver_id,
-            exitTime: l.exit_time,
-            period: l.period as Period,
-            date: l.date,
-            registration: l.registration
-          })));
-        }
-        setLoading(false);
-      });
-  }, [selectedId]);
+    const currentOffset = isLoadMore ? historicalLogs.length : 0;
+
+    const { data, error } = await supabase
+      .from('exit_logs')
+      .select('*')
+      .eq('driver_id', selectedId)
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .order('exit_time', { ascending: true })
+      .range(currentOffset, currentOffset + PAGE_SIZE - 1);
+
+    if (data && !error) {
+      const newLogs = data.map((l: any) => ({
+        id: l.id,
+        driverId: l.driver_id,
+        name: l.name,
+        fleetNumber: l.fleet_number,
+        registration: l.registration,
+        company: l.company,
+        zone: l.zone,
+        dtNumber: l.dt_number,
+        ordersCount: l.orders_count,
+        exitTime: l.exit_time,
+        period: l.period as Period,
+        date: l.date
+      }));
+
+      if (isLoadMore) {
+        setHistoricalLogs(prev => [...prev, ...newLogs]);
+      } else {
+        setHistoricalLogs(newLogs);
+      }
+      setHasMore(data.length === PAGE_SIZE);
+    }
+    setLoading(false);
+  }, [selectedId, startDate, endDate, historicalLogs.length]);
+
+  useEffect(() => {
+    fetchDriverHistory(false);
+  }, [selectedId, startDate, endDate]);
 
   const driver = drivers.find(d => d.id === selectedId);
-  const filteredLogs = useMemo(() => historicalLogs.filter(log => log.date >= startDate && log.date <= endDate), [historicalLogs, startDate, endDate]);
+  const filteredLogs = historicalLogs; // Já filtrado pelo banco
 
   const zoneFrequencies = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -592,6 +617,21 @@ const DriverProductivityView: React.FC<{ isDarkMode: boolean; drivers: Driver[] 
                 </div>
               </div>
             </div>
+
+            {hasMore && (
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => fetchDriverHistory(true)}
+                  disabled={loading}
+                  className={`px-8 py-3 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all active:scale-95 ${isDarkMode
+                    ? 'bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500 hover:text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-600 hover:text-white border border-slate-200'
+                    }`}
+                >
+                  {loading ? 'CARREGANDO...' : 'CARREGAR MAIS REGISTROS'}
+                </button>
+              </div>
+            )}
           </>
         ) : (
           <div className="h-[500px] flex items-center justify-center opacity-10">

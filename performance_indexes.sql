@@ -1,19 +1,19 @@
--- 1. Índices para a tabela de logs de saída (Melhora buscas por data, tempo e terminal)
+-- INDICES PARA LOGS DE SAIDA
 CREATE INDEX IF NOT EXISTS idx_exit_logs_tenant_date ON exit_logs (tenant_id, date DESC);
 CREATE INDEX IF NOT EXISTS idx_exit_logs_exit_time ON exit_logs (exit_time DESC);
 
--- 2. Índices para a tabela de filas (Melhora a carga inicial das colunas)
+-- INDICES PARA FILAS
 CREATE INDEX IF NOT EXISTS idx_queues_tenant_period ON queues (tenant_id, period);
 
--- 3. Criação da tabela de arquivo (Opção A de arquivamento)
+-- TABELA DE ARQUIVO
 CREATE TABLE IF NOT EXISTS exit_logs_archive (
     LIKE exit_logs INCLUDING ALL
 );
 
--- 4. Índice para a tabela de arquivo
+-- INDICE PARA TABELA DE ARQUIVO 
 CREATE INDEX IF NOT EXISTS idx_exit_logs_archive_date ON exit_logs_archive (date DESC);
 
--- 5. Função para arquivar dados antigos (Move para exit_logs_archive e remove de exit_logs)
+-- FUNCAO PARA ARQUIVAR DADOS ANTIGOS
 CREATE OR REPLACE FUNCTION archive_old_logs(days_threshold INT) 
 RETURNS INT AS $$
 DECLARE

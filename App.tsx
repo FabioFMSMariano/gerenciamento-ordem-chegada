@@ -235,12 +235,29 @@ const App: React.FC = () => {
 
   const removeDriverFromDatabase = useCallback(async (driverId: string) => {
     const driver = drivers.find(d => d.id === driverId);
-    if (confirm(`ATENÇÃO: Deseja apagar permanentemente "${driver?.name}"?`)) {
-      setLoading(true);
-      await supabase.from('queues').delete().eq('driver_id', driverId);
-      await supabase.from('exit_logs').delete().eq('driver_id', driverId);
-      await supabase.from('drivers').delete().eq('id', driverId);
+    if (!confirm(`ATENÇÃO: Deseja apagar permanentemente "${driver?.name}"?`)) return;
+
+    setLoading(true);
+    try {
+      // 1. Remove from queues
+      const { error: qErr } = await supabase.from('queues').delete().eq('driver_id', driverId);
+      if (qErr) throw new Error(`Erro ao remover da fila: ${qErr.message}`);
+
+      // 2. Remove from exit logs
+      const { error: lErr } = await supabase.from('exit_logs').delete().eq('driver_id', driverId);
+      if (lErr) throw new Error(`Erro ao remover histórico: ${lErr.message}`);
+
+      // 3. Remove from drivers base
+      const { error: dErr } = await supabase.from('drivers').delete().eq('id', driverId);
+      if (dErr) throw new Error(`Erro ao remover cadastro: ${dErr.message}`);
+
+      alert('Cadastro e todo o histórico removidos com sucesso.');
       fetchData();
+    } catch (err: any) {
+      alert(`Falha na exclusão: ${err.message}`);
+      console.error('Delete flow error:', err);
+    } finally {
+      setLoading(false);
     }
   }, [drivers, fetchData]);
 
