@@ -974,7 +974,7 @@ const RegisterTenantForm: React.FC<{ isDarkMode: boolean; onSave: () => void }> 
       </div>
       <div className="flex flex-col gap-2">
         <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4">CÓDIGO DE ACESSO (PIN)</label>
-        <input placeholder="EX: 1234" required type="password" inputMode="numeric" className={`p-5 rounded-2xl border font-black mono text-center text-3xl ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={pin} onChange={e => setPin(e.target.value)} />
+        <input placeholder="EX: A1B2@C3D" required type="password" maxLength={8} className={`p-5 rounded-2xl border font-black mono text-center text-3xl ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={pin} onChange={e => setPin(e.target.value)} />
       </div>
       <button disabled={loading} className="bg-cyan-700 text-white p-6 rounded-[24px] font-black uppercase tracking-widest mt-4 shadow-xl transition-all hover:bg-cyan-600 active:scale-95 disabled:opacity-50">
         {loading ? 'CRIANDO...' : 'CRIAR NOVO WORKSPACE'}
@@ -1173,8 +1173,10 @@ const ManageOperatorPINView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }
       </div>
 
       <div className="flex flex-col gap-3">
-        <label className="text-[10px] font-black uppercase opacity-40 ml-2 tracking-widest">NOVO PIN PARA DEFINIR</label>
+        <label className="text-[10px] font-black uppercase opacity-40 ml-2 tracking-widest">NOVO PIN PARA DEFINIR (MÁX 8 CARACTERES)</label>
         <input
+          maxLength={8}
+          placeholder="EX: 1984@ABC"
           className={`p-5 rounded-2xl border font-black uppercase ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`}
           value={targetPin}
           onChange={e => setTargetPin(e.target.value)}

@@ -20,10 +20,10 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ isDarkMode, onSuccess }) => {
     setError(null);
 
     try {
-      // Verifica o PIN na tabela operator_access
+      // Verifica o PIN na tabela operator_access - Selecionamos apenas o necessário, nunca o PIN de volta
       const { data, error: queryError } = await supabase
         .from('operator_access')
-        .select('*')
+        .select('id, label, tenant_id')
         .eq('pin', pin)
         .single();
 
@@ -80,6 +80,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ isDarkMode, onSuccess }) => {
               required
               placeholder="CÓDIGO DE ACESSO"
               autoFocus
+              maxLength={8}
               className={`w-full px-8 py-8 rounded-[32px] border-4 outline-none font-black mono text-4xl text-center tracking-[0.5em] transition-all shadow-inner ${isDarkMode
                 ? 'bg-slate-900 border-white/5 focus:border-cyan-500/50 text-white'
                 : 'bg-slate-50 border-slate-200 focus:border-cyan-500 text-slate-900'
