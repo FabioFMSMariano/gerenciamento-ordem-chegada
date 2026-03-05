@@ -1160,14 +1160,21 @@ const ManageOperatorPINView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }
       alert('Por favor, insira um novo PIN primeiro.');
       return;
     }
-    const { error } = await supabase.from('operator_access').update({ pin: targetPin }).eq('id', id);
+    setLoading(true);
+    const { data, error } = await supabase.from('operator_access').update({ pin: targetPin }).eq('id', id).select();
+
     if (!error) {
-      alert(`PIN de "${label}" atualizado com sucesso para: ${targetPin}`);
-      setTargetPin('');
-      fetchOperators();
+      if (data && data.length > 0) {
+        alert(`PIN de "${label}" atualizado com sucesso para: ${targetPin}`);
+        setTargetPin('');
+        fetchOperators();
+      } else {
+        alert(`Atenção: A atualização retornou sucesso mas nenhuma linha foi alterada no banco de dados. Isso pode ser um problema de permissão (RLS).`);
+      }
     } else {
       alert('Erro ao atualizar: ' + error.message);
     }
+    setLoading(false);
   };
 
   return (
