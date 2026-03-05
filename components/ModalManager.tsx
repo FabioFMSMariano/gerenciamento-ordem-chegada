@@ -1142,7 +1142,7 @@ const SecurityChallengeView: React.FC<{
 const ManageOperatorPINView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
   const [operators, setOperators] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [targetPin, setTargetPin] = useState('1984@1984');
+  const [targetPin, setTargetPin] = useState('');
 
   const fetchOperators = useCallback(async () => {
     setLoading(true);
@@ -1155,10 +1155,15 @@ const ManageOperatorPINView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }
     fetchOperators();
   }, [fetchOperators]);
 
-  const handleUpdate = async (id: string) => {
+  const handleUpdate = async (id: string, label: string) => {
+    if (!targetPin) {
+      alert('Por favor, insira um novo PIN primeiro.');
+      return;
+    }
     const { error } = await supabase.from('operator_access').update({ pin: targetPin }).eq('id', id);
     if (!error) {
-      alert('PIN atualizado com sucesso!');
+      alert(`PIN de "${label}" atualizado com sucesso para: ${targetPin}`);
+      setTargetPin('');
       fetchOperators();
     } else {
       alert('Erro ao atualizar: ' + error.message);
@@ -1176,8 +1181,8 @@ const ManageOperatorPINView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }
         <label className="text-[10px] font-black uppercase opacity-40 ml-2 tracking-widest">NOVO PIN PARA DEFINIR (MÁX 8 CARACTERES)</label>
         <input
           maxLength={8}
-          placeholder="EX: 1984@ABC"
-          className={`p-5 rounded-2xl border font-black uppercase ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`}
+          placeholder="INSIRA O NOVO CÓDIGO..."
+          className={`p-5 rounded-2xl border font-black uppercase ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200'}`}
           value={targetPin}
           onChange={e => setTargetPin(e.target.value)}
         />
@@ -1191,7 +1196,7 @@ const ManageOperatorPINView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }
               <div className="text-xl font-black mono text-cyan-500">{op.pin}</div>
             </div>
             <button
-              onClick={() => handleUpdate(op.id)}
+              onClick={() => handleUpdate(op.id, op.label)}
               className="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
             >
               DEFINIR NOVO PIN
