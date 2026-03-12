@@ -32,4 +32,7 @@ BEGIN
     
     RETURN moved_count;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public;
+

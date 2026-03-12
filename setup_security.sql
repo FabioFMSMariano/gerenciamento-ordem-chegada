@@ -28,20 +28,20 @@ CREATE POLICY "Atualização de PIN" ON operator_access
 FOR UPDATE TO anon, authenticated 
 USING (true) WITH CHECK (true);
 
--- LOGS, FILAS E MOTORISTAS: Acesso total para anon/auth (Isolamento por App)
--- Nota: Como o sistema é guest-centric, permitimos o acesso mas garantimos o RLS ligado.
+-- LOGS, FILAS E MOTORISTAS: Acesso protegido para anon/auth
 CREATE POLICY "Acesso aos logs" ON exit_logs 
 FOR ALL TO anon, authenticated 
-USING (true) WITH CHECK (true);
+USING (tenant_id IS NOT NULL) WITH CHECK (tenant_id IS NOT NULL);
 
 CREATE POLICY "Acesso às filas" ON queues 
 FOR ALL TO anon, authenticated 
-USING (true) WITH CHECK (true);
+USING (tenant_id IS NOT NULL) WITH CHECK (tenant_id IS NOT NULL);
 
 CREATE POLICY "Acesso aos logs arquivados" ON exit_logs_archive 
 FOR ALL TO anon, authenticated 
-USING (true) WITH CHECK (true);
+USING (tenant_id IS NOT NULL) WITH CHECK (tenant_id IS NOT NULL);
 
 CREATE POLICY "Acesso aos motoristas" ON drivers 
 FOR ALL TO anon, authenticated 
-USING (true) WITH CHECK (true);
+USING (tenant_id IS NOT NULL) WITH CHECK (tenant_id IS NOT NULL);
+
