@@ -32,26 +32,27 @@ USING (id IS NOT NULL) WITH CHECK (id IS NOT NULL);
 -- LOGS
 CREATE POLICY "Acesso aos logs" ON exit_logs 
 FOR ALL TO anon, authenticated 
-USING (tenant_id IS NOT NULL AND length(tenant_id) > 0) 
-WITH CHECK (tenant_id IS NOT NULL AND length(tenant_id) > 0);
+USING (tenant_id IS NOT NULL AND tenant_id::text <> '') 
+WITH CHECK (tenant_id IS NOT NULL AND tenant_id::text <> '');
 
 -- FILAS
 CREATE POLICY "Acesso às filas" ON queues 
 FOR ALL TO anon, authenticated 
-USING (tenant_id IS NOT NULL AND length(tenant_id) > 0) 
-WITH CHECK (tenant_id IS NOT NULL AND length(tenant_id) > 0);
+USING (tenant_id IS NOT NULL AND tenant_id::text <> '') 
+WITH CHECK (tenant_id IS NOT NULL AND tenant_id::text <> '');
 
 -- ARQUIVO
 CREATE POLICY "Acesso aos logs arquivados" ON exit_logs_archive 
 FOR ALL TO anon, authenticated 
-USING (tenant_id IS NOT NULL AND length(tenant_id) > 0) 
-WITH CHECK (tenant_id IS NOT NULL AND length(tenant_id) > 0);
+USING (tenant_id IS NOT NULL AND tenant_id::text <> '') 
+WITH CHECK (tenant_id IS NOT NULL AND tenant_id::text <> '');
 
 -- MOTORISTAS
 CREATE POLICY "Acesso aos motoristas" ON drivers 
 FOR ALL TO anon, authenticated 
-USING (tenant_id IS NOT NULL AND length(tenant_id) > 0) 
-WITH CHECK (tenant_id IS NOT NULL AND length(tenant_id) > 0);
+USING (tenant_id IS NOT NULL AND tenant_id::text <> '') 
+WITH CHECK (tenant_id IS NOT NULL AND tenant_id::text <> '');
+
 
 -- 4. CORREÇÃO DA FUNÇÃO (Search Path Mutable)
 CREATE OR REPLACE FUNCTION archive_old_logs(days_threshold INT) 
