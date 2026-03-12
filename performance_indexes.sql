@@ -9,6 +9,8 @@ CREATE INDEX IF NOT EXISTS idx_queues_tenant_period ON queues (tenant_id, period
 CREATE TABLE IF NOT EXISTS exit_logs_archive (
     LIKE exit_logs INCLUDING ALL
 );
+ALTER TABLE exit_logs_archive ENABLE ROW LEVEL SECURITY;
+
 
 -- INDICE PARA TABELA DE ARQUIVO 
 CREATE INDEX IF NOT EXISTS idx_exit_logs_archive_date ON exit_logs_archive (date DESC);
